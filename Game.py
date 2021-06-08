@@ -64,3 +64,36 @@ class MancalaGame():
                 self.board[12-lasthole]=0
 
         return  playagain
+
+    def possible_moves(self):
+        possible_moves = 0
+        for i, a in enumerate(self.board[7:13]):
+            if a > 0:
+                possible_moves+=1
+        return  possible_moves
+
+    def isterminal(self):
+        player1side = 0
+        player2side = 0
+        for hole in range(6):
+            player1side = player1side + self.board[hole]
+            player2side = player2side + self.board[hole + 7]
+        if (player1side == 0 or player2side == 0):
+            self.board[6] = self.board[6] + player1side
+            self.board[13] = self.board[13] + player2side
+            for hole in range(6):
+                self.board[hole] = 0
+                self.board[12-hole] = 0
+            return True
+        return False
+
+
+
+    def who_won(self):
+        # who won
+        if ( self.board[6] >  self.board[13]):
+            print("You won") #player 1
+        elif ( self.board[6] <  self.board[13]):
+            print("AI won") # player2
+        else:
+            print("No one Win it is Draw ")
