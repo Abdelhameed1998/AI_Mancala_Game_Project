@@ -120,3 +120,109 @@ class MancalaGame():
         print("            |0|   |1|    |2|    |3|   |4|   |5|            ")
         for i in range(len(self.board)):
             self.board[i]=int(self.board[i])
+def minmax(board, alpha, beta, player,depth = 10,):
+    if depth == 0  or board.isterminal():
+        return board.static_eval() , -1
+    ## Maximaizer
+    if player:
+        maxEval = negative_infinity
+        move = -1
+        for i in range(7, 13, 1):
+            if board.board[i] == 0: #skip holes that holds zero stones
+                continue
+            a = MancalaGame(board.board[:]) # child
+            again = a.player_move(True,i)
+            eval, _ = minmax( a, alpha, beta, again,depth-1)
+            if maxEval < eval:
+                move = i
+            maxEval =max(eval,maxEval)
+            alpha = max(alpha, maxEval)
+            if alpha >= beta:
+                break
+        return maxEval, move
+
+    ## Minimaizer
+    else:
+        mineval = postitive_infinity
+        move = -1
+        for i in range(0, 6, 1):
+            if board.board[i] == 0: continue
+            a = MancalaGame(board.board[:])
+            again = a.player_move(False,i)
+            eval, _ = minmax(a,  alpha, beta, (not again),depth-1 )
+            if mineval > eval:
+                move = i
+            mineval = min(eval,mineval)
+            beta = min(beta, mineval)
+            if alpha >= beta:
+                # print("breaking ", i)
+                break
+        return mineval, move
+
+
+
+# if __name__ == "__main__":
+#     game = MancalaGame([4,4,3,4,0,0,0,4,4,4,3,0,0,0])
+#     game.print_board()
+#     print(game.another_turn_opportunities())
+#     print(game.another_turn_opportunities_for_opponenet())
+#     print(game.static_eval())
+#     print(game.stealing_opportunities())
+#     print(game.stealing_opportunities_for_opponent())
+#     # first = input("who plays first ? if you press y if opponent press o")
+#     # while not( first == 'y' or first == 'o'):
+#     #     first = input("you must choose who plays first ? if you press y if opponent press o")
+#     # if first == 'y':
+#     #     while (True):
+#     #         if game.isterminal():
+#     #             break
+#     #         while True:
+#     #             if game.isterminal():
+#     #                 break
+#     #             move = int(input("YOUR TURN "))
+#     #             while not game.validate_move(move):
+#     #                 move = int(input("YOUR TURN "))
+#     #             t = game.player_move(False,move)
+#     #             game.print_board()
+#     #             if not t:
+#     #                 break
+#     #         while (True):
+#     #             if game.isterminal():
+#     #                 break
+#     #             print("Opponent turn ")
+#     #             _, move = minmax(game, negative_infinity, postitive_infinity, True, 10)
+#     #             print('move-->', move)
+#     #             t = game.player_move(True, move)
+#     #             game.print_board()
+#     #             if not t:
+#     #                 break
+#     #     print('GAME ENDED')
+#     #     game.print_board()
+#     #     game.who_won()
+#     #
+#     # if first == 'o':
+#     #     while (True):
+#     #         if game.isterminal():
+#     #             break
+#     #         while (True):
+#     #             if game.isterminal():
+#     #                 break
+#     #             print("Opponent turn ")
+#     #             _, k = minmax(game,  negative_infinity, postitive_infinity, True,10)
+#     #             print('move-->', k)
+#     #             t = game.player_move(True,k)
+#     #             game.print_board()
+#     #             if not t:
+#     #                 break
+#     #         while True:
+#     #             if game.isterminal():
+#     #                 break
+#     #             h = int(input("YOUR TURN "))
+#     #             while not game.validate_move(h):
+#     #                 h = int(input("YOUR TURN "))
+#     #             t = game.player_move(False,h)
+#     #             game.print_board()
+#     #             if not t: break
+#     #     print('GAME ENDED')
+#     #     game.print_board()
+#     #     game.who_won()

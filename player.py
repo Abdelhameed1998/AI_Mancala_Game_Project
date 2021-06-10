@@ -17,6 +17,7 @@ class Player():
         else:
             print( 'PLAYER  {} turn  '.format(self.player_turn))
 
+
 class HumanPlayer(Player):
     type = False
     def make_move(self,board):
