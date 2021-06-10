@@ -97,3 +97,26 @@ class MancalaGame():
             print("AI won") # player2
         else:
             print("No one Win it is Draw ")
+            
+    
+    def print_board(self):
+        i = 0
+        for i in range(len(self.board)):
+            if (self.board[i]) < 10 :
+                self.board[i]=" "+str(self.board[i])
+            else:
+                self.board[i]=str(self.board[i])
+        print()
+        print("            |12|  |11|  |10|   |9|    |8|   |7| ")
+        print("+---------+-----+------+-----+------+-----+-----+---------+")
+        print("|Opponent | " + str(self.board[12]) + "  | " + (self.board[11])
+              + "   | " + (self.board[10]) + "  | " + (self.board[9])
+              + "   | " + (self.board[8]) + "  | " + (self.board[7]) + "  |    You  |")
+        print("| " + (self.board[13]) + "      |----+----+----+----+----+----+-------| " + (self.board[6]) + "      |")
+        print("|         | " + (self.board[0]) + "  | " + (self.board[1])
+              + "   | " + (self.board[2]) + "  | " + (self.board[3])
+              + "   | " + (self.board[4]) + "  | " + (self.board[5]) + "  |         |")
+        print("+---------+-----+------+-----+------+-----+-----+---------+")
+        print("            |0|   |1|    |2|    |3|   |4|   |5|            ")
+        for i in range(len(self.board)):
+            self.board[i]=int(self.board[i])

@@ -24,6 +24,7 @@ class HumanPlayer(Player):
         while not board.validate_move(move):
             move =int( input("Enter valid  Move: \n ").replace(" ",""))
         return  -1,int(move)
+
 class AI_Player(Player):
     def __init__(self,turn):
         super().__init__(player_turn=turn)
@@ -80,6 +81,16 @@ class AI_Player(Player):
                     self.cutoff +=1
                     break
             return float(mineval), move
+    
+    def iterative_deepening_move(self,time_limit,max_depth=11):
+        depth=1
+        bestmove = 7
+        start_time=int(time())
+        m=0
+        while depth < max_depth and not(start_time >= int(time_limit)):
+            m,bestmove = self.make_move(depth=depth)
+            depth +=1
+        return m,bestmove
 
 
 >>>>>>> b60b7ef49e6214be3df0c963a2295395e60c72cd
