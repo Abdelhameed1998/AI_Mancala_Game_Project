@@ -21,29 +21,47 @@ class Player():
 class HumanPlayer(Player):
     type = False
     def make_move(self,board):
-        move = int(input("Enter valid  Move: \n ").replace(" ",""))
-        while not board.validate_move(move):
-            move =int( input("Enter valid  Move: \n ").replace(" ",""))
-        return  -1,int(move)
+        move = str(input("Enter valid  Move: \n ").replace(" ",""))
+        while True:
+            if  len(move) == 0  or move.isalpha() or any ( c in move for c in ".!@#$%^&*()-+?_=,<>\""):
+                move = str(input("Enter valid  Move not a character or empty : \n ").replace(" ", ""))
+            elif not board.validate_move(int(move)):
+                move = str(input("Enter valid  Move: \n ").replace(" ", ""))
+            else:
+                move = int(move)
+                return -1, int(move)
 
 class AI_Player(Player):
-    def __init__(self,turn):
+    def __init__(self,turn,level=2):
         super().__init__(player_turn=turn)
         self.cutoff = 0
-        self.depth = 0
+        self.cutoff_level = []
         self.leaf_nodes=0
         self.leaf_eval=[]
+        self.level=level
+
     type = True
 
-    def make_move(self , board, alpha =neg_infinity, beta=pos_infinity, player=True,depth = 12):
+
+    def make_move(self,board):
+        ## level medium
+        if self.level ==1:
+            return self.move1(board)
+        ## level hard
+        elif self.level ==2:
+            return self.move2(board)
+        else:
+            return self.move2(board)
+
+
+
+    def move1(self ,board, alpha =neg_infinity, beta=pos_infinity, player=True,depth = 4):
         if depth == 0  or board.isterminal():
-            self.depth=depth
-            self.cutoff = 0
             if depth ==0:
-                self.leaf_nodes +=1
-                self.leaf_eval.append(board.static_eval())
                 return float(board.static_eval()) , -1
             else:
+                self.leaf_nodes += 1
+                self.leaf_eval.append(board.static_eval())
                 return float(board.static_eval()) , -1
 
         ## Maximaizer
@@ -53,15 +71,17 @@ class AI_Player(Player):
             for i in range(7, 13, 1):
                 if board.board[i] == 0: #skip holes that holds zero stones
                     continue
-                a = MancalaGame(board.board[:]) # child
+                a = MancalaGame(board.level, board.board[:]) # child
                 again = a.player_move(True,i)
-                eval, _ = self.make_move( a, alpha, beta, again,depth-1)
+                eval, _ = self.move1( a, alpha, beta, again,depth-1)
                 if maxEval < eval:
                     move = i
                 maxEval =max(eval,maxEval)
                 alpha = max(alpha, maxEval)
                 if alpha >= beta:
                     self.cutoff +=1
+
+                    self.cutoff_level.append(depth)
                     break
             return float(maxEval), move
 
@@ -71,18 +91,70 @@ class AI_Player(Player):
             move = -1
             for i in range(0, 6, 1):
                 if board.board[i] == 0: continue
-                a = MancalaGame(board.board[:])
+                a = MancalaGame(board.level,board.board[:])
                 again = a.player_move(False,i)
-                eval, _ = self.make_move(a,  alpha, beta, (not again),depth-1 )
+                eval, _ = self.move1(a,  alpha, beta, (not again),depth-1 )
                 if mineval > eval:
                     move = i
                 mineval = min(eval,mineval)
                 beta = min(beta, mineval)
                 if alpha >= beta:
                     self.cutoff +=1
+                    self.cutoff_level.append(depth)
                     break
             return float(mineval), move
-    
+
+
+    def move2(self , board, alpha =neg_infinity, beta=pos_infinity, player=True, depth = 11):
+        if depth == 0 or board.isterminal():
+            if depth == 0:
+                return float(board.static_eval()), -1
+            else:
+                self.leaf_nodes += 1
+                self.leaf_eval.append(board.static_eval())
+                return float(board.static_eval()), -1
+
+        ## Maximaizer
+        if player:
+            maxEval = neg_infinity
+            move = -1
+            for i in range(7, 13, 1):
+                if board.board[i] == 0: #skip holes that holds zero stones
+                    continue
+                a = MancalaGame(board.level,board.board[:]) # child
+                again = a.player_move(True,i)
+                eval, _ = self.move2( a, alpha, beta, again,depth-1)
+                if maxEval < eval:
+                    move = i
+                maxEval =max(eval,maxEval)
+                alpha = max(alpha, maxEval)
+                if alpha >= beta:
+                    self.cutoff += 1
+                    self.cutoff_level.append(depth)
+                    break
+            return float(maxEval), move
+
+        ## Minimaizer
+        else:
+            mineval = pos_infinity
+            move = -1
+            for i in range(0, 6, 1):
+                if board.board[i] == 0: continue
+                a = MancalaGame(board.level,board.board[:])
+                again = a.player_move(False,i)
+                eval, _ = self.move2(a,  alpha, beta, (not again),depth-1 )
+                if mineval > eval:
+                    move = i
+                mineval = min(eval,mineval)
+                beta = min(beta, mineval)
+                if alpha >= beta:
+                    self.cutoff += 1
+                    self.cutoff_level.append(depth)
+                    break
+            return float(mineval), move
+
+
+
     def iterative_deepening_move(self,time_limit,max_depth=11):
         depth=1
         bestmove = 7
@@ -94,4 +166,3 @@ class AI_Player(Player):
         return m,bestmove
 
 
->>>>>>> b60b7ef49e6214be3df0c963a2295395e60c72cd

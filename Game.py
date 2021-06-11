@@ -7,9 +7,9 @@ postitive_infinity = inf
 
 
 class MancalaGame():
-    def __init__(self ,level,board = None, stealing = True):
+    def __init__(self ,level, board = None, stealing = True):
         self.stealing = stealing
-        self.level = str(level)
+        self.level=level
         if board!=None: # you want to start at certain board state
             self.board = board
         else:
@@ -72,6 +72,8 @@ class MancalaGame():
                 possible_moves+=1
         return  possible_moves
 
+
+
     def isterminal(self):
         player1side = 0
         player2side = 0
@@ -97,8 +99,107 @@ class MancalaGame():
             print("AI won") # player2
         else:
             print("No one Win it is Draw ")
-            
-    
+
+
+    def static_eval(self):
+        if self.level == 2:
+            if self.isterminal():
+                if self.board[13] > self.board[6]:
+                    return 100
+                elif self.board[13] == self.board[6]:
+                    return 0
+                else:
+                    return -100
+            else:
+                score1 = self.another_turn_opportunities() * 0.1
+                score2 = (self.board[13] - self.board[6]) * .45
+                score3 = self.stealing_opportunities_for_opponent() * (-0.1)
+                score4 = self.stealing_opportunities() * .05
+                return score1+score2+score3+score4
+
+        elif self.level == 1:
+            if self.isterminal():
+                if self.board[13] > self.board[6]:
+                    return 100
+                elif self.board[13] == self.board[6]:
+                    return 0
+                else:
+                    return -100
+            else:
+                score2 = (self.board[13] - self.board[6]) * .45
+                return score2
+
+        else :
+            pass
+            ## will not happen
+
+
+
+    def check(self):
+        mancala1 = self.board[13]
+        mancala2 = self.board[6]
+        if mancala1 > 24:
+            return 25
+        elif mancala2 > 24:
+            return -25
+        else:
+            return 0
+
+
+    def another_turn_opportunities(self):
+        count=0.0
+        for i,a in enumerate(self.board[7:13]):
+            if (7+i)+a == 13 or (a%13)+(i+7)-13 ==1 :
+                count +=1
+        return float(count)
+
+    ## not used yet
+    def another_turn_opportunities_for_opponenet(self):
+        count=0.0
+        for i,a in enumerate(self.board[0:6]):
+            if i+a == 6 :
+                count +=1
+        return float(count)
+
+
+    def stealing_opportunities(self):
+        count = 0
+        if not self.stealing:
+            return 0.0
+        else:
+            emptyholes=0
+            list_of_empty=[]
+            for i, a in enumerate(self.board[7:13],7):
+                if a == 0:
+                    emptyholes +=1
+                    list_of_empty.append(int(i+a))
+            if emptyholes == 0:
+                return 0
+            else:
+                for i, a in enumerate(self.board[7:13],7):
+                    if  a +i in list_of_empty and  not a ==0:
+                        count+=1
+                return count
+
+    def stealing_opportunities_for_opponent(self):
+        count = 0
+        if not self.stealing:
+            return 0.0
+        else:
+            emptyholes = 0
+            list_of_empty = []
+            for i, a in enumerate(self.board[0:6]):
+                if a == 0:
+                    emptyholes += 1
+                    list_of_empty.append(int(i + a))
+            if emptyholes == 0:
+                return 0
+            else:
+                for i, a in enumerate(self.board[0:6]):
+                    if a + i in list_of_empty and not a == 0:
+                        count += 1
+                return count
+
     def print_board(self):
         i = 0
         for i in range(len(self.board)):
@@ -120,109 +221,14 @@ class MancalaGame():
         print("            |0|   |1|    |2|    |3|   |4|   |5|            ")
         for i in range(len(self.board)):
             self.board[i]=int(self.board[i])
-def minmax(board, alpha, beta, player,depth = 10,):
-    if depth == 0  or board.isterminal():
-        return board.static_eval() , -1
-    ## Maximaizer
-    if player:
-        maxEval = negative_infinity
-        move = -1
-        for i in range(7, 13, 1):
-            if board.board[i] == 0: #skip holes that holds zero stones
-                continue
-            a = MancalaGame(board.board[:]) # child
-            again = a.player_move(True,i)
-            eval, _ = minmax( a, alpha, beta, again,depth-1)
-            if maxEval < eval:
-                move = i
-            maxEval =max(eval,maxEval)
-            alpha = max(alpha, maxEval)
-            if alpha >= beta:
-                break
-        return maxEval, move
 
-    ## Minimaizer
-    else:
-        mineval = postitive_infinity
-        move = -1
-        for i in range(0, 6, 1):
-            if board.board[i] == 0: continue
-            a = MancalaGame(board.board[:])
-            again = a.player_move(False,i)
-            eval, _ = minmax(a,  alpha, beta, (not again),depth-1 )
-            if mineval > eval:
-                move = i
-            mineval = min(eval,mineval)
-            beta = min(beta, mineval)
-            if alpha >= beta:
-                # print("breaking ", i)
-                break
-        return mineval, move
+    def validate_move(self,move):
+        if not (0 <= move  <= 5 ) :
+            print("you must choose a hole in your side from 0 to 5 ")
+            return False
+        elif self.board[move] == 0: #empty hole
+            print("You must choose a non-empty hole ")
+            return False
+        return True
 
 
-
-# if __name__ == "__main__":
-#     game = MancalaGame([4,4,3,4,0,0,0,4,4,4,3,0,0,0])
-#     game.print_board()
-#     print(game.another_turn_opportunities())
-#     print(game.another_turn_opportunities_for_opponenet())
-#     print(game.static_eval())
-#     print(game.stealing_opportunities())
-#     print(game.stealing_opportunities_for_opponent())
-#     # first = input("who plays first ? if you press y if opponent press o")
-#     # while not( first == 'y' or first == 'o'):
-#     #     first = input("you must choose who plays first ? if you press y if opponent press o")
-#     # if first == 'y':
-#     #     while (True):
-#     #         if game.isterminal():
-#     #             break
-#     #         while True:
-#     #             if game.isterminal():
-#     #                 break
-#     #             move = int(input("YOUR TURN "))
-#     #             while not game.validate_move(move):
-#     #                 move = int(input("YOUR TURN "))
-#     #             t = game.player_move(False,move)
-#     #             game.print_board()
-#     #             if not t:
-#     #                 break
-#     #         while (True):
-#     #             if game.isterminal():
-#     #                 break
-#     #             print("Opponent turn ")
-#     #             _, move = minmax(game, negative_infinity, postitive_infinity, True, 10)
-#     #             print('move-->', move)
-#     #             t = game.player_move(True, move)
-#     #             game.print_board()
-#     #             if not t:
-#     #                 break
-#     #     print('GAME ENDED')
-#     #     game.print_board()
-#     #     game.who_won()
-#     #
-#     # if first == 'o':
-#     #     while (True):
-#     #         if game.isterminal():
-#     #             break
-#     #         while (True):
-#     #             if game.isterminal():
-#     #                 break
-#     #             print("Opponent turn ")
-#     #             _, k = minmax(game,  negative_infinity, postitive_infinity, True,10)
-#     #             print('move-->', k)
-#     #             t = game.player_move(True,k)
-#     #             game.print_board()
-#     #             if not t:
-#     #                 break
-#     #         while True:
-#     #             if game.isterminal():
-#     #                 break
-#     #             h = int(input("YOUR TURN "))
-#     #             while not game.validate_move(h):
-#     #                 h = int(input("YOUR TURN "))
-#     #             t = game.player_move(False,h)
-#     #             game.print_board()
-#     #             if not t: break
-#     #     print('GAME ENDED')
-#     #     game.print_board()
-#     #     game.who_won()
